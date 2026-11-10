@@ -62,7 +62,7 @@ All rates are reported with raw counts and denominators.
 The full pre-registered protocol — hypotheses, metrics, exclusions, budget rule and
 falsifiers — is in [PROTOCOL.md](PROTOCOL.md). It was frozen before the run.
 
-## Results
+## Pilot results (2026-11-11, pre-sprint)
 
 <!-- RESULTS:START -->
 **270 episodes** (30 tasks × 3 models × 3 repeats), collected 2026-11-11. Total API cost
