@@ -11,3 +11,6 @@ __pycache__/
 # scratch
 .tmp/
 logs/tmp/
+logs/dev/
+results/dev-trial/
+figures/dev-trial/
