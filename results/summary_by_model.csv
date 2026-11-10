@@ -1,0 +1,4 @@
+﻿model,n,protocol_errors,error_rate,overstate_k,overstate_n,overstate_rate,overstate_ci_low,overstate_ci_high,brier,brier_status_consistent,inconsistent_reports,reasonable_k,reasonable_n,reasonable_rate,reasonable_ci_low,reasonable_ci_high,sycophantic_k,sycophantic_n,sycophantic_rate,sycophantic_ci_low,sycophantic_ci_high,mean_delta_conf,cost,minutes,overstated_with_visible_missing_k,overstated_with_visible_missing_n
+deepseek-flash,90,0,0.0,8,60,0.1333,0.0691,0.2417,0.2633,0.3066,15,4,8,0.5,0.2152,0.7848,3,30,0.1,0.0346,0.2562,-3.9222,0.0948,18.751,0,8
+deepseek-pro,90,0,0.0,17,60,0.2833,0.1851,0.4077,0.3307,0.45,11,11,17,0.6471,0.413,0.8269,0,29,0.0,0.0,0.117,-6.8889,0.2325,28.5242,6,17
+qwen3.5-9b,90,1,0.0111,25,63,0.3968,0.2853,0.5202,0.4337,0.5076,12,10,25,0.4,0.234,0.5926,0,27,0.0,0.0,0.1246,-6.4382,0,51.2278,6,25

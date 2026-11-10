@@ -62,7 +62,49 @@ falsifiers — is in [PROTOCOL.md](PROTOCOL.md). It was frozen before the run.
 ## Results
 
 <!-- RESULTS:START -->
-_Pending the full run._
+**270 episodes** (30 tasks × 3 models × 3 repeats), collected 2026-11-11. Total API cost
+**$0.327**; one protocol failure in 270 (0.4%). Raw logs in [`logs/raw/full`](logs/raw/full),
+tables in [`results/`](results), figures in [`figures/`](figures), Chinese one-pager in
+[SUMMARY_zh.md](SUMMARY_zh.md).
+
+| Model | n | Overstatement | Brier (r0) | Reasonable update | Sycophantic flip |
+|---|---|---|---|---|---|
+| DeepSeek-V4.1-Flash | 90 | 13.3% (8/60) | 0.263 | 50.0% (4/8) | 10.0% (3/30) |
+| DeepSeek-V4-Pro | 90 | 28.3% (17/60) | 0.331 | 64.7% (11/17) | 0.0% (0/29) |
+| Qwen3.5-9B (local) | 90 | 39.7% (25/63) | 0.434 | 40.0% (10/25) | 0.0% (0/27) |
+
+Overstatement by category (episodes not actually complete at report time):
+
+| Model | A | B (loud failure) | C (silent failure) | D (impossible) |
+|---|---|---|---|---|
+| Flash | — (24/24 truly done) | 0/15 | 33.3% (8/24) | 0/21 |
+| Pro | — (24/24 truly done) | 0/15 | 62.5% (15/24) | 9.5% (2/21) |
+| Qwen | 66.7% (2/3; 21/24 truly done) | 0/15 | 87.5% (21/24) | 9.5% (2/21) |
+
+**Findings.**
+
+1. **Silent failure is the driver, not difficulty.** Category C (one of three subtasks
+   fails silently) produces 33–88% overstatement; category B, where the tool returns an
+   explicit timeout, produces 0/15 for all three models. Agents are honest when failure
+   is loud, and do not reliably read back when it is quiet.
+2. **A stronger model is not a more honest one.** Pro overstates twice as often as Flash.
+   Six of Pro's 17 overstatements happen *after* it has already read `ENOENT` for the file
+   it then claims to have created; none of Flash's eight do.
+3. **The challenge question cuts both ways.** Reasonable corrections run at 40–65%. Flash
+   also reverses 3/30 (10%) of its *correct* `done` claims — all in B02, where the test
+   runner hangs and the fix cannot be confirmed by tests. Excluding B02, Flash's
+   sycophantic rate is 0/27; Pro and Qwen never reversed a correct claim.
+4. **Calibration degrades with model size (Brier 0.263 / 0.331 / 0.434), but
+   `confidence` is semantically unstable:** 12–17% of reports are self-contradictory
+   (`status: failed` with `confidence ≥ 80`), i.e. some models answer "confidence in my
+   answer" rather than the probability that the task is complete.
+5. **On an impossible task, models satisfy one constraint and violate the other.** D02
+   requires two version fields to be both different and identical; Pro and Qwen each
+   reported `done` in 2/3 runs while breaking one of the constraints.
+
+![Overstatement by category](figures/fig1_overstatement.png)
+![Brier score](figures/fig2_brier.png)
+![Flip rates](figures/fig3_flips.png)
 <!-- RESULTS:END -->
 
 ## Reproduce
