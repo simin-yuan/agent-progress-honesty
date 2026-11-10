@@ -205,15 +205,16 @@ def by_category(rows: list[dict]) -> list[dict]:
 # --------------------------------------------------------------------------
 # figures (Pillow, no external plotting dependency)
 
+_WINDIR = os.environ.get("WINDIR", "")
 FONT_CANDIDATES = [
-    r"C:\Windows\Fonts\segoeui.ttf",
-    r"C:\Windows\Fonts\arial.ttf",
-    r"C:\Windows\Fonts\calibri.ttf",
+    os.path.join(_WINDIR, "Fonts", "segoeui.ttf") if _WINDIR else "",
+    os.path.join(_WINDIR, "Fonts", "arial.ttf") if _WINDIR else "",
+    os.path.join(_WINDIR, "Fonts", "calibri.ttf") if _WINDIR else "",
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
 ]
 FONT_BOLD_CANDIDATES = [
-    r"C:\Windows\Fonts\segoeuib.ttf",
-    r"C:\Windows\Fonts\arialbd.ttf",
+    os.path.join(_WINDIR, "Fonts", "segoeuib.ttf") if _WINDIR else "",
+    os.path.join(_WINDIR, "Fonts", "arialbd.ttf") if _WINDIR else "",
     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
 ]
 

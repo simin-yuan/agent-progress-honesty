@@ -7,8 +7,11 @@ A small, reproducible, offline benchmark for measuring **progress-report honesty
 LLM agents: overstatement, confidence calibration, and capitulation under social
 pressure.
 
-Sprint project, 11–14 November 2026. All code, tasks and data in this repository were
-created for this project; see [Pre-existing vs New](#pre-existing-vs-new).
+**Pilot (30 × 3 × 3 = 270 episodes) run on 2026-11-11, before the sprint, and disclosed
+as pre-existing. Sprint work (13–15 Nov 2026) will add the intervention study below.**
+Status at this commit: pilot complete; the sprint intervention has **not been run yet** —
+the sprint column of [Pre-existing vs New](#pre-existing-vs-new) says exactly what landed
+when.
 
 ---
 
@@ -143,16 +146,24 @@ SUMMARY_zh.md one-page Chinese summary
 
 ## Pre-existing vs New
 
-- **Pre-existing:** none. This repository was created for this sprint. No code, task
-  text, or data was copied from `agent-hang-bench`, `agent-faultbench`, or any other
-  repository. The idea of injecting tool failures is a general research direction, not
-  borrowed code; the environment, tasks, prompts, harness and analysis here were
-  written from scratch for this project.
-- **New (11–14 Nov 2026):** mock tool environment, 30-task set, episode protocol with
-  two pressure rounds, three-model harness with per-episode JSON logs, metrics and
-  figures, pre-registration.
-- **Third-party:** Python standard library and Pillow (bundled with the harness
-  runtime). No third-party model code.
+| Pre-sprint pilot (2026-11-11) | Sprint work (2026-11-13 – 11-15) | Not copied from other repositories |
+|---|---|---|
+| Mock tool environment, 30-task set, episode protocol with two pressure rounds, the 270-episode baseline and this pre-registration. Collected **before** the sprint and disclosed here as pre-existing. | Intervention study I1/I2, statistical re-analysis, final report. **Not yet run at this commit.** | No code, task text or data was copied from any prior internal or public benchmark repository. The idea of injecting tool failures is a general research direction, not borrowed code; the environment, tasks, prompts, harness and analysis here were written from scratch. |
+
+Development runs used only to debug the harness (`logs/dev/`, not published) are not part
+of either column. The baseline protocols and prompts were frozen before the 270 episodes.
+
+Third-party code: Python standard library and Pillow (bundled with the harness runtime).
+
+## AI assistance
+
+Implementation, experiment operation and analysis were carried out by an AI coding agent
+(DeepSeek Harness) under the direction of Simin Yuan. The agent runs on
+**DeepSeek-V4.1-Flash, which is also one of the models under test**. Scoring is done by a
+deterministic hidden verifier over the virtual filesystem, never by a model, so the
+agent's identity cannot influence the ground truth; the protocol, task set and decision
+rules were fixed in advance and reviewed by the human author, who also submits the
+report.
 
 ## Limitations
 
@@ -167,7 +178,12 @@ SUMMARY_zh.md one-page Chinese summary
 
 Episodes contain no private data, no credentials, and no content from private
 repositories. The mock filesystem is synthetic. API keys are read from the environment
-and never written to logs.
+and never written to logs. Before publication the whole repository (including all 270
+episode logs) is scanned by `tools/privacy_scan.py` for local paths, usernames, e-mail
+addresses, secret-like strings and private repository names; see
+[logs/raw/README.md](logs/raw/README.md) for the redaction rules and the scan result.
+The one `sk-`-shaped string in the task fixtures and logs is a synthetic value used by
+the impossible task D05, not a credential (see [tasks/README.md](tasks/README.md)).
 
 ## License
 

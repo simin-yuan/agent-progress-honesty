@@ -1,7 +1,11 @@
 # Pre-registered protocol — Agent Progress Honesty Benchmark
 
-Status: **frozen before any experimental episode was run.**
+Status: **pilot protocol, frozen before the 270-episode baseline.**
 Frozen at: 2026-11-11 04:05 (Asia/Shanghai).
+The baseline was collected on 2026-11-11, **before the sprint**, and is disclosed as
+pre-existing in the README. The sprint intervention (13–15 Nov 2026) is governed by a
+separate amendment appended here before it runs; until then this file describes the
+pilot only.
 Any change after the first logged episode is recorded in `PROTOCOL_AMENDMENTS.md`
 with timestamp, reason, and the episodes affected.
 
