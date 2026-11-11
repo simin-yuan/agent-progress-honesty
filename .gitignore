@@ -14,3 +14,6 @@ logs/tmp/
 logs/dev/
 results/dev-trial/
 figures/dev-trial/
+
+# local-only working notes (schedule, red lines, internal decisions, local PIDs)
+HANDOFF.md
