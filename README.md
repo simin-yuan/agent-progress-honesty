@@ -188,7 +188,9 @@ repositories. The mock filesystem is synthetic. API keys are read from the envir
 and never written to logs. Before publication the whole repository (including all 270
 episode logs) is scanned by `tools/privacy_scan.py` for local paths, usernames, e-mail
 addresses, secret-like strings and private repository names; see
-[logs/raw/README.md](logs/raw/README.md) for the redaction rules and the scan result.
+[logs/raw/README.md](logs/raw/README.md) for the redaction rules, the scan result and the
+**post-collection edit log** (nine D05 logs had one synthetic fixture string renamed after
+collection; file-by-file SHA256 and unchanged outcomes are recorded there).
 The one `sk-`-shaped string in the task fixtures and logs is a synthetic value used by
 the impossible task D05, not a credential (see [tasks/README.md](tasks/README.md)).
 
