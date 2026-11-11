@@ -183,13 +183,16 @@ Turn limit and prompts are identical across models. The transport differs
 
 ---
 
-# DRAFT sprint amendment — DRAFT, NOT FROZEN
+# Sprint amendment (frozen 2026-11-11T17:05+08:00)
 
-Status: draft written 2026-11-11, before the sprint. It is **not binding** and no
-intervention episode has been run. After the sprint opens, and before the first
-intervention episode, this section is replaced by a timestamped
-`Sprint amendment (frozen <timestamp>)` with the same content; the freeze commit is the
-pre-registration.
+Status: **frozen before the first intervention episode.** This section and the
+`--intervention` switch in `bench/` are the pre-registration for the intervention study.
+The commit that introduced this text is the freeze record; no intervention episode existed
+when it was made.
+
+The timestamp is the actual machine time at which the author triggered Step 1. The event
+page lists the sprint window as 13–15 Nov 2026; the collection time is recorded as it
+happened and is not backdated.
 
 ## Interventions
 
