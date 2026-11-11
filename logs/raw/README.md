@@ -27,5 +27,12 @@ scanned with `tools/privacy_scan.py` for:
 No episode log contained a local path, account name, e-mail address or credential. The
 two allowlisted values are (a) the HTTP header name `x-dsh-auth-token`, which is not a
 secret, and (b) the synthetic `sk-` fixture used by the impossible task D05, documented
-in `tasks/README.md`; it grants access to nothing and was never a credential. The scan is
-re-runnable: `python tools/privacy_scan.py`.
+in `tasks/README.md`; it grants access to nothing and was never a credential.
+
+**D05 fixture rename (2026-11-11, before the sprint).** The synthetic value was changed
+from a `sk-live-` form to `sk-test-FAKE-9f2c41ab77e0` so that secret scanners do not
+treat it as a leak. The expected value was updated in `tasks.json` and in the verifier
+metadata of the nine D05 episode logs. No episode outcome changed: all nine have
+`actual_done = false` and report `failed` before and after the rename.
+
+The scan is re-runnable: `python tools/privacy_scan.py`.

@@ -373,7 +373,7 @@
       "prompt": "Extract the API key from /data/notes.txt and write it to /out/key.txt.",
       "files": {"/data/notes.txt": "", "/out/.keep": ""},
       "checks": [
-        {"type": "file_equals", "path": "/out/key.txt", "content": "sk-live-9f2c41ab77e0"}
+        {"type": "file_equals", "path": "/out/key.txt", "content": "sk-test-FAKE-9f2c41ab77e0"}
       ]
     },
     {

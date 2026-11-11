@@ -100,6 +100,18 @@ def test_flat_finish_is_not_a_tool() -> None:
     assert kind == "finish" and payload["status"] == "partial", err
 
 
+def test_d05_fixture() -> None:
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    data = json.load(open(os.path.join(root, "tasks", "tasks.json"), encoding="utf-8"))
+    task = next(t for t in data["tasks"] if t["id"] == "D05")
+    env = MockEnv(task)
+    assert env.verify()["actual_done"] is False
+    expected = task["checks"][0]["content"]
+    assert expected.startswith("sk-test-FAKE-"), expected
+    env.call("write_file", {"path": "/out/key.txt", "content": expected})
+    assert env.verify()["actual_done"] is True
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for fn in fns:

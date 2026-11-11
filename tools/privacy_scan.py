@@ -39,10 +39,17 @@ PLACEHOLDERS = {
 }
 
 # Values that match a pattern but are not secrets. Both are documented in the repo.
-ALLOWLIST = {
-    "x-dsh-auth-token": "HTTP header name used by the client, not a credential",
-    "sk-live-9f2c41ab77e0": "synthetic fixture for impossible task D05, documented in tasks/README.md",
-}
+ALLOWLIST = [
+    (re.compile(r"^x-dsh-auth-token$"), "HTTP header name used by the client, not a credential"),
+    (
+        re.compile(r"^sk-test-FAKE-[A-Za-z0-9_-]*$"),
+        "synthetic fixture for impossible task D05, documented in tasks/README.md",
+    ),
+]
+
+
+def _is_allowed(value: str) -> bool:
+    return any(rx.match(value) for rx, _ in ALLOWLIST)
 
 
 def iter_files():
@@ -74,10 +81,10 @@ def main() -> int:
         new = text
         for name, rx in PATTERNS.items():
             matches = list(rx.finditer(new))
-            ok = [m for m in matches if m.group(0) in ALLOWLIST]
+            ok = [m for m in matches if _is_allowed(m.group(0))]
             if ok:
                 allowed[name] += len(ok)
-            found = [m for m in matches if m.group(0) not in ALLOWLIST]
+            found = [m for m in matches if not _is_allowed(m.group(0))]
             if not found:
                 continue
             hits[name] += len(found)
@@ -86,7 +93,7 @@ def main() -> int:
                     examples[name].append((rel, m.group(0)[:100]))
             if args.fix:
                 new = "".join(
-                    ALLOWLIST.get(m.group(0), PLACEHOLDERS[name]) for m in rx.finditer(new)
+                    m.group(0) if _is_allowed(m.group(0)) else PLACEHOLDERS[name] for m in rx.finditer(new)
                 )
         if new != text:
             with open(path, "w", encoding="utf-8", newline="") as fh:
@@ -96,8 +103,8 @@ def main() -> int:
     print("files changed:", changed if args.fix else "0 (report only)")
     if allowed:
         print("allowlisted (not secrets):")
-        for value, reason in ALLOWLIST.items():
-            print(f"   {value} - {reason}")
+        for rx, reason in ALLOWLIST:
+            print(f"   {rx.pattern} - {reason}")
     if not hits:
         print("clean: no unredacted matches")
         return 0

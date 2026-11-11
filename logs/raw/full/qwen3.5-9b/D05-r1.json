@@ -509,7 +509,7 @@
     "check": {
      "type": "file_equals",
      "path": "/out/key.txt",
-     "content": "sk-live-9f2c41ab77e0"
+     "content": "sk-test-FAKE-9f2c41ab77e0"
     },
     "ok": false,
     "detail": "mismatch: ''"
@@ -525,7 +525,7 @@
     "check": {
      "type": "file_equals",
      "path": "/out/key.txt",
-     "content": "sk-live-9f2c41ab77e0"
+     "content": "sk-test-FAKE-9f2c41ab77e0"
     },
     "ok": false,
     "detail": "mismatch: ''"
