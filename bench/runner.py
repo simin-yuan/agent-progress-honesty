@@ -15,15 +15,14 @@ from .config import (
     MAX_TOOL_TURNS,
     ModelSpec,
 )
-from .env import MockEnv, norm_path
+from .env import MockEnv
 from .llm import cost_usd
 from .protocol import (
-    I2_MESSAGE,
     REPAIR_PROMPT,
     STATUSES,
     STEP_LIMIT_PROMPT,
+    SYSTEM_PROMPT,
     parse_action,
-    system_prompt,
     tool_result_message,
 )
 
@@ -33,15 +32,11 @@ def _now() -> str:
 
 
 class Episode:
-    def __init__(
-        self, client, spec: ModelSpec, task: dict[str, Any], run_idx: int, intervention: str = "baseline"
-    ) -> None:
+    def __init__(self, client, spec: ModelSpec, task: dict[str, Any], run_idx: int) -> None:
         self.client = client
         self.spec = spec
         self.task = task
         self.run_idx = run_idx
-        self.intervention = intervention
-        self.system = system_prompt(intervention)
         self.env = MockEnv(task)
         self.messages: list[dict[str, Any]] = [{"role": "user", "content": task["prompt"]}]
         self.transcript: list[dict[str, Any]] = []
@@ -51,18 +46,11 @@ class Episode:
         self.protocol_error = False
         self.reports: dict[str, Any] = {}
         self.verification_at_report: dict[str, Any] | None = None
-        # I2 state (framework-level self-check gate)
-        self.i2_accepted = intervention != "I2"
-        self.i2_rejected = 0
-        self.i2_reads = 0
-        self.i2_turns_since = 0
-        self.i2_artifact_paths: set[str] = set()
-        self.i2_read_back = False
 
     # -- transport ---------------------------------------------------------
 
     def _chat(self, phase: str, round_idx: int) -> str:
-        res = self.client.chat(self.system, self.messages)
+        res = self.client.chat(SYSTEM_PROMPT, self.messages)
         for k in self.usage:
             self.usage[k] += res.usage.get(k, 0)
         self.transcript.append(
@@ -101,20 +89,6 @@ class Episode:
 
     def _execute(self, name: str, args: dict[str, Any]) -> dict[str, Any]:
         self.turns_used += 1
-        if name == "write_file" and isinstance(args, dict) and args.get("path"):
-            self.i2_artifact_paths.add(norm_path(args["path"]))
-        if self.intervention == "I2" and not self.i2_accepted and self.i2_rejected > 0:
-            self.i2_turns_since += 1
-            if name in ("read_file", "list_files"):
-                self.i2_reads += 1
-                path = norm_path(args.get("path"))
-                if name == "read_file":
-                    if path in self.i2_artifact_paths:
-                        self.i2_read_back = True
-                else:
-                    prefix = "" if path == "/" else path + "/"
-                    if any(a.startswith(prefix) for a in self.i2_artifact_paths):
-                        self.i2_read_back = True
         result = self.env.call(name, args, turn=self.turns_used)
         self.transcript.append(
             {"phase": "tool", "role": "tool", "tool": name, "args": args, "result": result}
@@ -164,58 +138,18 @@ class Episode:
             "turns_used": self.turns_used,
             "protocol_error": self.protocol_error,
             "errors": self.errors,
-            "intervention": self.intervention,
-            "i2": {
-                "rejected": self.i2_rejected,
-                "reads_after_rejection": self.i2_reads,
-                "read_back": self.i2_read_back,
-                "turns_since_rejection": self.i2_turns_since,
-                "attempt_status": (self.reports.get("r0_attempt") or {}).get("status"),
-                "accepted_status": (self.reports.get("r0") or {}).get("status"),
-            }
-            if self.intervention == "I2"
-            else None,
         }
         return record
-
-    def _gate_i2(self, report: dict[str, Any], echo: bool = True) -> bool:
-        """Return True if I2 rejects this report and injects the neutral self-check turn."""
-        if self.intervention != "I2" or self.i2_accepted:
-            return False
-        if self.i2_rejected == 0:
-            # The first finish is always rejected, even if the model already read
-            # something: the forced self-check turn is the treatment.
-            self.reports["r0_attempt"] = dict(report)
-            self.i2_rejected = 1
-            self.i2_reads = 0
-            self.i2_turns_since = 0
-            if echo:
-                self._assistant_echo(self.transcript[-1]["content"])
-            self._user(I2_MESSAGE)
-            return True
-        if self.i2_reads >= 3 or self.i2_turns_since >= 6:
-            self.i2_accepted = True
-            return False
-        self.i2_rejected += 1
-        self.i2_turns_since += 1
-        if echo:
-            self._assistant_echo(self.transcript[-1]["content"])
-        self._user(I2_MESSAGE)
-        return True
 
     def _apply(self, kind: str, payload: Any, report_key: str) -> dict[str, Any] | None:
         """Execute one parsed action; return the report if it contained a finish."""
         if kind == "finish":
-            if report_key == "r0" and self._gate_i2(payload):
-                return None
             self._record_report(report_key, payload)
             return payload
         calls = payload if kind == "batch" else [("tool", payload)]
         self._assistant_echo(self.transcript[-1]["content"])
         for k, p in calls:
             if k == "finish":
-                if report_key == "r0" and self._gate_i2(p, echo=False):
-                    return None
                 self._record_report(report_key, p)
                 return p
             name, args = p
@@ -232,8 +166,7 @@ class Episode:
                 return
         # step limit
         self._user(STEP_LIMIT_PROMPT)
-        extra = 8 if self.intervention == "I2" else 4
-        for _ in range(extra):
+        for _ in range(4):
             kind, payload = self._action("main_limit", 0)
             if kind == "failure":
                 return
@@ -278,10 +211,8 @@ class Episode:
             previous = answered
 
 
-def run_episode(
-    client, spec: ModelSpec, task: dict[str, Any], run_idx: int, out_dir: str, intervention: str = "baseline"
-) -> dict[str, Any]:
-    ep = Episode(client, spec, task, run_idx, intervention)
+def run_episode(client, spec: ModelSpec, task: dict[str, Any], run_idx: int, out_dir: str) -> dict[str, Any]:
+    ep = Episode(client, spec, task, run_idx)
     record = ep.run()
     model_dir = os.path.join(out_dir, spec.label)
     os.makedirs(model_dir, exist_ok=True)

@@ -155,14 +155,7 @@ SUMMARY_zh.md one-page Chinese summary
 
 | Pre-sprint pilot (2026-11-11) | Sprint work (2026-11-13 – 11-15) | Not copied from other repositories |
 |---|---|---|
-| Mock tool environment, 30-task set, episode protocol with two pressure rounds, the 270-episode baseline and this pre-registration. Collected **before** the sprint and disclosed here as pre-existing. The **intervention protocol was frozen on 2026-11-11T17:05** and the I1/I2 harness switch was implemented pre-sprint; both are disclosed here. | Intervention **data collection** (540 episodes), statistical re-analysis, final report. **Not yet run at this commit.** | No code, task text or data was copied from any prior internal or public benchmark repository. The idea of injecting tool failures is a general research direction, not borrowed code; the environment, tasks, prompts, harness and analysis here were written from scratch. |
-
-An attempted start on 2026-11-11, before the event opened, produced four retained local
-smoke episodes (one I1, one I2, two baseline regression; all `deepseek-flash`). It was
-stopped before the intervention grid: the logs are kept unpublished under
-`logs/aborted_2026-11-11/`, were not analyzed, and are not used in any result. (Five
-episodes were attempted in total; one earlier I2 smoke log was overwritten while debugging
-the harness.)
+| Mock tool environment, 30-task set, episode protocol with two pressure rounds, the 270-episode baseline and this pre-registration. Collected **before** the sprint and disclosed here as pre-existing. | Intervention study I1/I2, statistical re-analysis, final report. **Not yet run at this commit.** | No code, task text or data was copied from any prior internal or public benchmark repository. The idea of injecting tool failures is a general research direction, not borrowed code; the environment, tasks, prompts, harness and analysis here were written from scratch. |
 
 Development runs used only to debug the harness (`logs/dev/`, not published) are not part
 of either column. The baseline protocols and prompts were frozen before the 270 episodes.

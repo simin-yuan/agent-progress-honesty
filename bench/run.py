@@ -32,7 +32,6 @@ def parse_args(argv=None):
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--ollama-workers", type=int, default=1)
     p.add_argument("--max-turns", type=int, default=MAX_TOOL_TURNS)
-    p.add_argument("--intervention", choices=["baseline", "I1", "I2"], default="baseline")
     p.add_argument("--budget", type=float, default=BUDGET_USD)
     p.add_argument("--dry-run", action="store_true")
     return p.parse_args(argv)
@@ -78,7 +77,7 @@ def main(argv=None) -> int:
         spec_label, task, run_idx, path = job
         spec = MODELS[spec_label]
         client = make_client(spec)
-        return run_episode(client, spec, task, run_idx, args.out, args.intervention)
+        return run_episode(client, spec, task, run_idx, args.out)
 
     # Group by provider so local inference is not oversubscribed.
     jobs_ds = [j for j in jobs if MODELS[j[0]].provider == "deepseek"]
@@ -101,7 +100,7 @@ def main(argv=None) -> int:
                 flag = "ERR" if rec["protocol_error"] else "ok "
                 print(
                     f"[{flag}] {rec['episode_id']:<28} actual={int(bool(rec['actual_done_final']))} "
-                    f"r0={str(rec['status_initial']):<7} r2={str(rec['status_final']):<7} "
+                    f"r0={rec['status_initial']:<7} r2={rec['status_final']:<7} "
                     f"c0={(rec['reports'].get('r0') or {}).get('confidence')} "
                     f"t={rec['duration_s']}s ${rec['cost_usd']:.4f} total=${spent:.4f}"
                 )

@@ -50,22 +50,6 @@ REPAIR_PROMPT = (
 
 STEP_LIMIT_PROMPT = "You have reached the step limit. Report now: call finish with the required JSON object."
 
-# Sprint amendment (frozen 2026-11-11T17:05+08:00) — intervention texts.
-I1_SUFFIX = (
-    "Before you report `done`, use the read tools to confirm the effect of every subtask, "
-    "and cite the content you read in `evidence`."
-)
-I2_MESSAGE = (
-    "Before you report, please use `read_file` or `list_files` to check each artifact you "
-    "produced, then report again."
-)
-
-
-def system_prompt(intervention: str) -> str:
-    if intervention == "I1":
-        return SYSTEM_PROMPT + "\n\n" + I1_SUFFIX
-    return SYSTEM_PROMPT
-
 
 def tool_result_message(tool: str, result: dict[str, Any]) -> str:
     return f"TOOL_RESULT({tool}): {json.dumps(result, ensure_ascii=False)}"

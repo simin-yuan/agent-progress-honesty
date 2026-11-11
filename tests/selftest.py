@@ -1,4 +1,4 @@
-﻿"""Self-tests for the mock environment and the action parser.
+"""Self-tests for the mock environment and the action parser.
 
 Run: python -m tests.selftest
 No network, no model calls.
@@ -13,10 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from bench.env import MockEnv, norm_path  # noqa: E402
-from bench.llm import ChatResult  # noqa: E402
-from bench.protocol import I1_SUFFIX, I2_MESSAGE, parse_action, system_prompt  # noqa: E402
-from bench.runner import Episode  # noqa: E402
-from bench.config import MODELS  # noqa: E402
+from bench.protocol import parse_action  # noqa: E402
 
 
 def test_paths() -> None:
@@ -113,75 +110,6 @@ def test_d05_fixture() -> None:
     assert expected.startswith("sk-test-FAKE-"), expected
     env.call("write_file", {"path": "/out/key.txt", "content": expected})
     assert env.verify()["actual_done"] is True
-
-
-class _ScriptedClient:
-    """Returns canned assistant texts, one per call. No network."""
-
-    def __init__(self, script: list[str]) -> None:
-        self.script = script
-        self.calls = 0
-
-    def chat(self, system: str, messages: list[dict]) -> ChatResult:
-        text = self.script[min(self.calls, len(self.script) - 1)]
-        self.calls += 1
-        return ChatResult(text=text, usage={"input_tokens": 10, "output_tokens": 10}, latency_ms=1)
-
-
-def _a01_task() -> dict:
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    data = json.load(open(os.path.join(root, "tasks", "tasks.json"), encoding="utf-8"))
-    return next(t for t in data["tasks"] if t["id"] == "A01")
-
-
-def test_i1_prompt_suffix() -> None:
-    assert I1_SUFFIX in system_prompt("I1")
-    assert I1_SUFFIX not in system_prompt("baseline")
-    assert system_prompt("I2") == system_prompt("baseline")
-
-
-def test_i2_gate_rejects_first_report_and_requires_readback() -> None:
-    script = [
-        '{"tool":"write_file","args":{"path":"/out/hello.txt","content":"hello world"}}',
-        '{"tool":"finish","args":{"status":"done","confidence":90,"evidence":"wrote it"}}',
-        '{"tool":"read_file","args":{"path":"/out/hello.txt"}}',
-        '{"tool":"read_file","args":{"path":"/out/hello.txt"}}',
-        '{"tool":"read_file","args":{"path":"/out/hello.txt"}}',
-        '{"tool":"finish","args":{"status":"done","confidence":95,"evidence":"read it back"}}',
-        '{"tool":"finish","args":{"status":"done","confidence":95,"evidence":"still done"}}',
-        '{"tool":"finish","args":{"status":"done","confidence":95,"evidence":"still done"}}',
-    ]
-    ep = Episode(_ScriptedClient(script), MODELS["deepseek-flash"], _a01_task(), 1, "I2")
-    rec = ep.run()
-    assert rec["intervention"] == "I2"
-    assert rec["i2"]["rejected"] == 1, rec["i2"]
-    assert rec["i2"]["read_back"] is True, rec["i2"]
-    assert rec["i2"]["reads_after_rejection"] >= 3, rec["i2"]
-    assert rec["reports"]["r0_attempt"]["status"] == "done"
-    assert rec["reports"]["r0"]["status"] == "done"
-    assert rec["actual_done_initial"] is True
-    assert not rec["protocol_error"]
-
-
-def test_i2_message_is_neutral() -> None:
-    assert "wrong" not in I2_MESSAGE.lower()
-    assert "mistake" not in I2_MESSAGE.lower()
-    assert "check" in I2_MESSAGE.lower()
-
-
-def test_baseline_is_not_gated() -> None:
-    script = [
-        '{"tool":"write_file","args":{"path":"/out/hello.txt","content":"hello world"}}',
-        '{"tool":"finish","args":{"status":"done","confidence":90,"evidence":"wrote it"}}',
-        '{"tool":"finish","args":{"status":"done","confidence":90,"evidence":"still done"}}',
-        '{"tool":"finish","args":{"status":"done","confidence":90,"evidence":"still done"}}',
-    ]
-    ep = Episode(_ScriptedClient(script), MODELS["deepseek-flash"], _a01_task(), 1, "baseline")
-    rec = ep.run()
-    assert rec["i2"] is None
-    assert rec["i2"] is None
-    assert rec["reports"]["r0"]["status"] == "done"
-    assert rec["actual_done_initial"] is True
 
 
 if __name__ == "__main__":
