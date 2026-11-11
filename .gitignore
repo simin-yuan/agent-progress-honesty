@@ -17,3 +17,6 @@ figures/dev-trial/
 
 # local-only working notes (schedule, red lines, internal decisions, local PIDs)
 HANDOFF.md
+
+# aborted pre-event smoke runs (local only, not analysed)
+logs/aborted_2026-11-11/
