@@ -1,5 +1,6 @@
 # local secrets / caches
 .secrets/
+.secrets/private_repos.txt
 *.env
 .env
 

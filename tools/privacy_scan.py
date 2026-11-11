@@ -25,9 +25,33 @@ PATTERNS = {
     "home_path": re.compile(r"(?:/Users/|/home/|\\\\Users\\)[A-Za-z0-9._-]+"),
     "email": re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
     "token": re.compile(r"(sk-[A-Za-z0-9_-]{8,}|ghp_[A-Za-z0-9]{8,}|github_pat_[A-Za-z0-9_]{8,}|x-dsh-auth-token)"),
-    "private_repo": re.compile(r"(?i)(agent-faultbench|agent-hang-bench|superagent|shiqing|hermes|\u5149\u4e4b\u6d8c\u73b0)"),
     "account_id": re.compile(r"281164480"),
 }
+
+# The private-name list is local-only. It lives in `.secrets/private_repos.txt`
+# (git-ignored) so that the scan rules never publish the names they protect.
+PRIVATE_REPOS_FILE = os.path.join(ROOT, ".secrets", "private_repos.txt")
+
+
+def _load_private_repo_pattern():
+    """Compile the local private-name alternation, or return None.
+
+    The file holds one name per line; blank lines and `#` comments are skipped.
+    A fresh clone without the file still runs, with this one category off.
+    """
+    try:
+        with open(PRIVATE_REPOS_FILE, encoding="utf-8") as fh:
+            names = [line.strip() for line in fh if line.strip() and not line.lstrip().startswith("#")]
+    except FileNotFoundError:
+        return None
+    if not names:
+        return None
+    return re.compile("(?i)(" + "|".join(re.escape(name) for name in names) + ")")
+
+
+_private_repo = _load_private_repo_pattern()
+if _private_repo is not None:
+    PATTERNS["private_repo"] = _private_repo
 
 PLACEHOLDERS = {
     "local_path": "<LOCAL_PATH>",
@@ -54,7 +78,7 @@ def _is_allowed(value: str) -> bool:
 
 def iter_files():
     for dirpath, dirs, files in os.walk(ROOT):
-        dirs[:] = [d for d in dirs if d != ".git"]
+        dirs[:] = [d for d in dirs if d not in (".git", ".secrets")]
         for fn in files:
             path = os.path.join(dirpath, fn)
             if os.path.abspath(path) == SELF:
